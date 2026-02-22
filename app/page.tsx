@@ -117,13 +117,20 @@ export default function Home() {
   const handleSend = async () => {
     if (!message.trim() || !selectedConversation || !currentUserId) return;
 
-    await sendMessage({
-      conversationId: selectedConversation,
-      senderId: currentUserId,
-      body: message,
-    });
-
+    const currentMessage = message;
     setMessage("");
+
+    try {
+      await sendMessage({
+        conversationId: selectedConversation,
+        senderId: currentUserId,
+        body: currentMessage,
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Message failed to send");
+      setMessage(currentMessage); // Restore message on failure
+    }
   };
 
   if (!users || !conversations) {
@@ -165,7 +172,7 @@ export default function Home() {
       />
 
       {filteredUsers.length === 0 ? (
-        <p className="text-gray-500">No users found</p>
+        <p className="text-gray-500">No users match your search</p>
       ) : (
         <div className="flex flex-col gap-2">
           {filteredUsers.map((u) => {
@@ -364,7 +371,7 @@ function UserRow({ user, conv, currentUserId, handleConversation, isUserOnline, 
   return (
     <div
       onClick={() => handleConversation(user._id)}
-      className={`flex items-center justify-between p-2 border rounded-lg cursor-pointer ${isSelected ? "bg-gray-100" : "hover:bg-gray-100"}`}
+      className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isSelected ? "bg-gray-100 border-gray-300" : "hover:bg-gray-50 border-transparent hover:border-gray-200"}`}
     >
       <div className="flex items-center gap-3">
         <div className="relative">
