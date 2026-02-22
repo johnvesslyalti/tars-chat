@@ -405,9 +405,11 @@ export default function Home() {
                     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
                     setShowScrollButton(false);
                   }}
-                  className="absolute bottom-24 right-6 md:right-10 bg-[#6c47ff] text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 active:scale-95 transition z-50 flex items-center justify-center font-medium text-sm"
+                  className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-white text-gray-600 border border-gray-100 w-10 h-10 rounded-full shadow-md hover:scale-105 hover:bg-gray-50 active:scale-95 transition z-50 flex items-center justify-center"
                 >
-                  ↓ Latest
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
                 </button>
               )}
 
