@@ -37,9 +37,7 @@ export const getUserConversations = query({
   args: { userId: v.id("users") },
 
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query("conversations")
-      .filter((q) => q.eq(q.field("members"), [args.userId]))
-      .collect();
+    const allConvs = await ctx.db.query("conversations").collect();
+    return allConvs.filter(c => c.members.includes(args.userId));
   },
 });

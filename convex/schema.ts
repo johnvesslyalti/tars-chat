@@ -33,4 +33,10 @@ export default defineSchema({
     userId: v.id("users"),
     expiresAt: v.number(),
   }).index("by_conversation", ["conversationId"]),
+  
+  lastSeen: defineTable({
+    conversationId: v.id("conversations"),
+    userId: v.id("users"),
+    lastSeenAt: v.number(),
+  }).index("by_user_conversation", ["userId", "conversationId"]),
 });

@@ -12,6 +12,7 @@ export default function Home() {
 
   const createUser = useMutation(api.users.createUser);
   const getOrCreateConversation = useMutation(api.conversations.getOrCreateConversation);
+  const markAsRead = useMutation(api.lastSeen.markAsRead);
   const sendMessage = useMutation(api.messages.sendMessage);
   const updatePresence = useMutation(api.presence.updatePresence);
   const setTyping = useMutation(api.typing.setTyping);
@@ -36,6 +37,11 @@ export default function Home() {
   const typingUsers = useQuery(
     api.typing.getTyping,
     selectedConversation ? { conversationId: selectedConversation } : "skip"
+  );
+  
+  const conversations = useQuery(
+    api.conversations.getUserConversations,
+    currentUserId ? { userId: currentUserId } : "skip"
   );
   
   const [now, setNow] = useState(Date.now());
@@ -88,6 +94,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [currentUserId]);
 
+  useEffect(() => {
+    if (!selectedConversation || !currentUserId) return;
+
+    markAsRead({
+      conversationId: selectedConversation,
+      userId: currentUserId,
+    });
+  }, [selectedConversation, currentUserId, messages]);
+
   const handleConversation = async (otherUserId: Id<"users">) => {
     if (!currentUserId) return;
 
@@ -137,25 +152,20 @@ export default function Home() {
         <p className="text-gray-500">No users found</p>
       ) : (
         <div className="flex flex-col gap-2">
-          {filteredUsers.map((u) => (
-            <div
-              key={u._id}
-              onClick={() => handleConversation(u._id)}
-              className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
-            >
-              <div className="relative">
-                <img
-                  src={u.imageUrl}
-                  className="w-10 h-10 rounded-full"
-                />
-                
-                {isUserOnline(u._id) && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                )}
-              </div>
-              <p>{u.name}</p>
-            </div>
-          ))}
+          {filteredUsers.map((u) => {
+            const conv = conversations?.find(c => c.members.includes(u._id) && c.members.includes(currentUserId!));
+            return (
+              <UserRow
+                key={u._id}
+                user={u}
+                conv={conv}
+                currentUserId={currentUserId}
+                handleConversation={handleConversation}
+                isUserOnline={isUserOnline}
+                selectedConversation={selectedConversation}
+              />
+            );
+          })}
         </div>
       )}
       </div>
@@ -270,5 +280,39 @@ export default function Home() {
       )}
 
     </main>
+  );
+}
+
+function UserRow({ user, conv, currentUserId, handleConversation, isUserOnline, selectedConversation }: any) {
+  const unreadCount = useQuery(
+    api.lastSeen.getUnreadCount,
+    conv && currentUserId ? { conversationId: conv._id, userId: currentUserId } : "skip"
+  );
+  
+  const isSelected = selectedConversation === conv?._id;
+
+  return (
+    <div
+      onClick={() => handleConversation(user._id)}
+      className={`flex items-center justify-between p-2 border rounded-lg cursor-pointer ${isSelected ? "bg-gray-100" : "hover:bg-gray-100"}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <img
+            src={user.imageUrl}
+            className="w-10 h-10 rounded-full"
+          />
+          {isUserOnline(user._id) && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+          )}
+        </div>
+        <p>{user.name}</p>
+      </div>
+      {!isSelected && unreadCount !== undefined && unreadCount > 0 && (
+        <span className="bg-[#6c47ff] text-white text-xs px-2 py-1 rounded-full">
+          {unreadCount}
+        </span>
+      )}
+    </div>
   );
 }
