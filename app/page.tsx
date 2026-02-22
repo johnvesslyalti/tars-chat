@@ -14,6 +14,7 @@ export default function Home() {
   const getOrCreateConversation = useMutation(api.conversations.getOrCreateConversation);
   const sendMessage = useMutation(api.messages.sendMessage);
   const updatePresence = useMutation(api.presence.updatePresence);
+  const setTyping = useMutation(api.typing.setTyping);
   
   const users = useQuery(
     api.users.getOtherUsers,
@@ -31,6 +32,28 @@ export default function Home() {
   );
 
   const presence = useQuery(api.presence.getPresence);
+  
+  const typingUsers = useQuery(
+    api.typing.getTyping,
+    selectedConversation ? { conversationId: selectedConversation } : "skip"
+  );
+  
+  const [now, setNow] = useState(Date.now());
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  
+  const otherTyping = typingUsers?.find(
+    (t) => t.userId !== currentUserId && t.expiresAt > now
+  );
+  
+  const typingUserDetail = otherTyping 
+    ? users?.find((u) => u._id === otherTyping.userId)
+    : null;
 
   const isUserOnline = (userId: Id<"users">) => {
     const record = presence?.find((p) => p.userId === userId);
@@ -160,11 +183,25 @@ export default function Home() {
                 ))
               )}
             </div>
+            
+            {typingUserDetail && (
+              <p className="text-sm text-gray-500 italic mt-2">
+                {typingUserDetail.name} is typing...
+              </p>
+            )}
+
             <div className="flex gap-2 mt-4 pt-4 border-t">
               <input
                 className="flex-1 border rounded-lg p-2"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  if (!selectedConversation || !currentUserId) return;
+                  setTyping({
+                    conversationId: selectedConversation,
+                    userId: currentUserId,
+                  });
+                }}
               />
               <button
                 onClick={handleSend}
@@ -203,11 +240,24 @@ export default function Home() {
             )}
           </div>
           
+          {typingUserDetail && (
+            <p className="text-sm text-gray-500 italic mt-2">
+              {typingUserDetail.name} is typing...
+            </p>
+          )}
+
           <div className="flex gap-2 mt-4 pt-4 border-t">
             <input
               className="flex-1 border rounded-lg p-2"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (!selectedConversation || !currentUserId) return;
+                setTyping({
+                  conversationId: selectedConversation,
+                  userId: currentUserId,
+                });
+              }}
             />
             <button
               onClick={handleSend}
