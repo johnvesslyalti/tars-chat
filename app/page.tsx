@@ -126,7 +126,23 @@ export default function Home() {
     setMessage("");
   };
 
-  if (!users) return <p className="p-4">Loading users...</p>;
+  if (!users || !conversations) {
+    return (
+      <main className="h-screen flex">
+        <div className="w-full md:w-80 border-r p-4 flex-col">
+          <h1 className="text-2xl font-semibold mb-4">Users</h1>
+          <div className="flex flex-col gap-2">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-12 bg-gray-200 animate-pulse rounded-lg"
+              />
+            ))}
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(search.toLowerCase())
@@ -178,19 +194,46 @@ export default function Home() {
         ) : (
           <div className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto flex flex-col gap-2">
-              {messages?.length === 0 ? (
+              {!messages ? (
+                <div className="flex flex-col gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-16 bg-gray-200 animate-pulse rounded-lg"
+                    />
+                  ))}
+                </div>
+              ) : messages.length === 0 ? (
                 <p className="text-gray-500 text-sm">
                   No messages yet. Start the conversation 🚀
                 </p>
               ) : (
-                messages?.map((m) => (
-                  <div key={m._id} className="p-2 border rounded-lg">
-                    <p>{m.body}</p>
-                    <span className="text-xs text-gray-500">
-                      {formatTimestamp(m.createdAt)}
-                    </span>
-                  </div>
-                ))
+                messages.map((m) => {
+                  const isSent = m.senderId === currentUserId;
+                  return (
+                    <div
+                      key={m._id}
+                      className={`flex ${isSent ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`p-3 max-w-[70%] rounded-2xl ${
+                          isSent
+                            ? "bg-[#6c47ff] text-white rounded-br-none"
+                            : "bg-gray-100 text-black rounded-bl-none border"
+                        }`}
+                      >
+                        <p>{m.body}</p>
+                        <span
+                          className={`text-[10px] mt-1 block text-right ${
+                            isSent ? "text-purple-200" : "text-gray-500"
+                          }`}
+                        >
+                          {formatTimestamp(m.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
             
@@ -234,19 +277,46 @@ export default function Home() {
           </button>
           
           <div className="flex-1 overflow-y-auto flex flex-col gap-2">
-            {messages?.length === 0 ? (
+            {!messages ? (
+              <div className="flex flex-col gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-16 bg-gray-200 animate-pulse rounded-lg"
+                  />
+                ))}
+              </div>
+            ) : messages.length === 0 ? (
               <p className="text-gray-500 text-sm">
                 No messages yet. Start the conversation 🚀
               </p>
             ) : (
-              messages?.map((m) => (
-                <div key={m._id} className="p-2 border rounded-lg">
-                  <p>{m.body}</p>
-                  <span className="text-xs text-gray-500">
-                    {formatTimestamp(m.createdAt)}
-                  </span>
-                </div>
-              ))
+              messages.map((m) => {
+                const isSent = m.senderId === currentUserId;
+                return (
+                  <div
+                    key={m._id}
+                    className={`flex ${isSent ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`p-3 max-w-[85%] rounded-2xl ${
+                        isSent
+                          ? "bg-[#6c47ff] text-white rounded-br-none"
+                          : "bg-gray-100 text-black rounded-bl-none border"
+                      }`}
+                    >
+                      <p>{m.body}</p>
+                      <span
+                        className={`text-[10px] mt-1 block text-right ${
+                          isSent ? "text-purple-200" : "text-gray-500"
+                        }`}
+                      >
+                        {formatTimestamp(m.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
           
@@ -308,11 +378,11 @@ function UserRow({ user, conv, currentUserId, handleConversation, isUserOnline, 
         </div>
         <p>{user.name}</p>
       </div>
-      {!isSelected && unreadCount !== undefined && unreadCount > 0 && (
+      {!isSelected && unreadCount ? unreadCount > 0 && (
         <span className="bg-[#6c47ff] text-white text-xs px-2 py-1 rounded-full">
           {unreadCount}
         </span>
-      )}
+      ) : null}
     </div>
   );
 }
