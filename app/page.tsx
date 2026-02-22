@@ -13,6 +13,7 @@ export default function Home() {
   const createUser = useMutation(api.users.createUser);
   const getOrCreateConversation = useMutation(api.conversations.getOrCreateConversation);
   const sendMessage = useMutation(api.messages.sendMessage);
+  const updatePresence = useMutation(api.presence.updatePresence);
   
   const users = useQuery(
     api.users.getOtherUsers,
@@ -29,6 +30,14 @@ export default function Home() {
     selectedConversation ? { conversationId: selectedConversation } : "skip"
   );
 
+  const presence = useQuery(api.presence.getPresence);
+
+  const isUserOnline = (userId: Id<"users">) => {
+    const record = presence?.find((p) => p.userId === userId);
+    if (!record) return false;
+    return Date.now() - record.lastSeen < 10000;
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -43,6 +52,18 @@ export default function Home() {
 
     syncUser();
   }, [user]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    updatePresence({ userId: currentUserId });
+
+    const interval = setInterval(() => {
+      updatePresence({ userId: currentUserId });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentUserId]);
 
   const handleConversation = async (otherUserId: Id<"users">) => {
     if (!currentUserId) return;
@@ -99,10 +120,16 @@ export default function Home() {
               onClick={() => handleConversation(u._id)}
               className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
             >
-              <img
-                src={u.imageUrl}
-                className="w-10 h-10 rounded-full"
-              />
+              <div className="relative">
+                <img
+                  src={u.imageUrl}
+                  className="w-10 h-10 rounded-full"
+                />
+                
+                {isUserOnline(u._id) && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                )}
+              </div>
               <p>{u.name}</p>
             </div>
           ))}
