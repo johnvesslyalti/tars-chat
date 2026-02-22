@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { formatTimestamp } from "@/lib/formatTimestamp";
 
 export default function Home() {
   const { user } = useUser();
@@ -109,7 +110,10 @@ export default function Home() {
           <div className="flex flex-col gap-2">
             {messages?.map((m) => (
               <div key={m._id} className="p-2 border rounded-lg">
-                {m.body}
+                <p>{m.body}</p>
+                <span className="text-xs text-gray-500">
+                  {formatTimestamp(m.createdAt)}
+                </span>
               </div>
             ))}
           </div>
