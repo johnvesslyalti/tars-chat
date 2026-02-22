@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -56,6 +56,17 @@ const DummySidebar = () => (
            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"></path>
         </svg>
       </div>
+    </div>
+    
+    <div className="mt-auto mb-4">
+      <UserButton 
+        appearance={{
+          elements: {
+            userButtonAvatarBox: "w-10 h-10",
+            userButtonPopoverCard: "mb-2"
+          }
+        }} 
+      />
     </div>
   </div>
 );

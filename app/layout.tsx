@@ -41,20 +41,16 @@ export default function RootLayout({
         >
           <ConvexClientProvider>
 
-            <header className="flex justify-end items-center p-4 gap-4 h-16 border-b">
+            <div className="absolute top-4 right-4 z-50">
               <SignedOut>
                 <SignInButton />
                 <SignUpButton>
-                  <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer ml-4">
                     Sign Up
                   </button>
                 </SignUpButton>
               </SignedOut>
-
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </header>
+            </div>
 
             {children}
 
