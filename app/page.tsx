@@ -4,27 +4,46 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function Home() {
   const { user } = useUser();
 
   const createUser = useMutation(api.users.createUser);
+  const getOrCreateConversation = useMutation(api.conversations.getOrCreateConversation);
   const users = useQuery(
     api.users.getOtherUsers,
     user ? { clerkId: user.id } : "skip"
   );
 
   const [search, setSearch] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<Id<"users"> | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
-    createUser({
-      clerkId: user.id,
-      name: user.fullName ?? "Anonymous",
-      imageUrl: user.imageUrl,
-    });
+    const syncUser = async () => {
+      const id = await createUser({
+        clerkId: user.id,
+        name: user.fullName ?? "Anonymous",
+        imageUrl: user.imageUrl,
+      });
+      setCurrentUserId(id);
+    };
+
+    syncUser();
   }, [user]);
+
+  const handleConversation = async (otherUserId: Id<"users">) => {
+    if (!currentUserId) return;
+
+    const conversationId = await getOrCreateConversation({
+      userId: currentUserId,
+      otherUserId,
+    });
+
+    console.log("Conversation:", conversationId);
+  };
 
   if (!users) return <p className="p-4">Loading users...</p>;
 
@@ -49,10 +68,11 @@ export default function Home() {
       ) : (
         <div className="flex flex-col gap-2">
           {filteredUsers.map((u) => (
-            <div
-              key={u._id}
-              className="flex items-center gap-3 p-2 border rounded-lg"
-            >
+              <div
+                key={u._id}
+                onClick={() => handleConversation(u._id)}
+                className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
+              >
               <img
                 src={u.imageUrl}
                 className="w-10 h-10 rounded-full"
