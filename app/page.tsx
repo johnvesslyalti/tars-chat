@@ -109,10 +109,20 @@ export default function Home() {
   );
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!showScrollButton) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, showScrollButton]);
+  
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const nearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    setShowScrollButton(!nearBottom);
+  };
   
   const [now, setNow] = useState(Date.now());
   
@@ -332,7 +342,7 @@ export default function Home() {
               )}
 
               {/* Messages Body */}
-              <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6 relative">
+              <div onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6 relative">
                 {!messages ? (
                   <div className="flex flex-col gap-4">
                     {[...Array(4)].map((_, i) => (
@@ -386,6 +396,19 @@ export default function Home() {
                     <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 </div>
+              )}
+
+              {/* Scroll Button */}
+              {showScrollButton && (
+                <button
+                  onClick={() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                    setShowScrollButton(false);
+                  }}
+                  className="absolute bottom-24 right-6 md:right-10 bg-[#6c47ff] text-white px-4 py-2 rounded-full shadow-lg hover:scale-105 active:scale-95 transition z-50 flex items-center justify-center font-medium text-sm"
+                >
+                  ↓ Latest
+                </button>
               )}
 
               {/* Chat Input */}
