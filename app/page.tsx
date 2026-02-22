@@ -74,7 +74,11 @@ export default function Home() {
   );
 
   return (
-    <main className="p-6 max-w-xl mx-auto">
+    <main className="h-screen flex">
+      <div className={`
+        ${selectedConversation ? "hidden md:flex" : "flex"}
+        w-full md:w-80 border-r p-4 flex-col
+      `}>
 
       <h1 className="text-2xl font-semibold mb-4">Users</h1>
 
@@ -90,11 +94,11 @@ export default function Home() {
       ) : (
         <div className="flex flex-col gap-2">
           {filteredUsers.map((u) => (
-              <div
-                key={u._id}
-                onClick={() => handleConversation(u._id)}
-                className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
-              >
+            <div
+              key={u._id}
+              onClick={() => handleConversation(u._id)}
+              className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
+            >
               <img
                 src={u.imageUrl}
                 className="w-10 h-10 rounded-full"
@@ -104,20 +108,75 @@ export default function Home() {
           ))}
         </div>
       )}
+      </div>
+
+      <div className="hidden md:flex flex-1 p-6 flex-col">
+        {!selectedConversation ? (
+          <div className="flex items-center justify-center h-full text-gray-500">
+            Select a conversation to start chatting
+          </div>
+        ) : (
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-2">
+              {messages?.length === 0 ? (
+                <p className="text-gray-500 text-sm">
+                  No messages yet. Start the conversation 🚀
+                </p>
+              ) : (
+                messages?.map((m) => (
+                  <div key={m._id} className="p-2 border rounded-lg">
+                    <p>{m.body}</p>
+                    <span className="text-xs text-gray-500">
+                      {formatTimestamp(m.createdAt)}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex gap-2 mt-4 pt-4 border-t">
+              <input
+                className="flex-1 border rounded-lg p-2"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <button
+                onClick={handleSend}
+                className="bg-[#6c47ff] text-white px-4 rounded-lg"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {selectedConversation && (
-        <div className="mt-8 border-t pt-4">
-          <div className="flex flex-col gap-2">
-            {messages?.map((m) => (
-              <div key={m._id} className="p-2 border rounded-lg">
-                <p>{m.body}</p>
-                <span className="text-xs text-gray-500">
-                  {formatTimestamp(m.createdAt)}
-                </span>
-              </div>
-            ))}
+        <div className="md:hidden fixed inset-0 bg-white p-4 flex flex-col">
+          <button
+            onClick={() => setSelectedConversation(null)}
+            className="mb-4 text-sm text-gray-500 text-left"
+          >
+            ← Back
+          </button>
+          
+          <div className="flex-1 overflow-y-auto flex flex-col gap-2">
+            {messages?.length === 0 ? (
+              <p className="text-gray-500 text-sm">
+                No messages yet. Start the conversation 🚀
+              </p>
+            ) : (
+              messages?.map((m) => (
+                <div key={m._id} className="p-2 border rounded-lg">
+                  <p>{m.body}</p>
+                  <span className="text-xs text-gray-500">
+                    {formatTimestamp(m.createdAt)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
-          <div className="flex gap-2 mt-4">
+          
+          <div className="flex gap-2 mt-4 pt-4 border-t">
             <input
               className="flex-1 border rounded-lg p-2"
               value={message}
