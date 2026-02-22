@@ -11,6 +11,8 @@ export default function Home() {
 
   const createUser = useMutation(api.users.createUser);
   const getOrCreateConversation = useMutation(api.conversations.getOrCreateConversation);
+  const sendMessage = useMutation(api.messages.sendMessage);
+  
   const users = useQuery(
     api.users.getOtherUsers,
     user ? { clerkId: user.id } : "skip"
@@ -18,6 +20,13 @@ export default function Home() {
 
   const [search, setSearch] = useState("");
   const [currentUserId, setCurrentUserId] = useState<Id<"users"> | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<Id<"conversations"> | null>(null);
+  const [message, setMessage] = useState("");
+
+  const messages = useQuery(
+    api.messages.getMessages,
+    selectedConversation ? { conversationId: selectedConversation } : "skip"
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -42,7 +51,19 @@ export default function Home() {
       otherUserId,
     });
 
-    console.log("Conversation:", conversationId);
+    setSelectedConversation(conversationId);
+  };
+
+  const handleSend = async () => {
+    if (!message.trim() || !selectedConversation || !currentUserId) return;
+
+    await sendMessage({
+      conversationId: selectedConversation,
+      senderId: currentUserId,
+      body: message,
+    });
+
+    setMessage("");
   };
 
   if (!users) return <p className="p-4">Loading users...</p>;
@@ -80,6 +101,31 @@ export default function Home() {
               <p>{u.name}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {selectedConversation && (
+        <div className="mt-8 border-t pt-4">
+          <div className="flex flex-col gap-2">
+            {messages?.map((m) => (
+              <div key={m._id} className="p-2 border rounded-lg">
+                {m.body}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <input
+              className="flex-1 border rounded-lg p-2"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button
+              onClick={handleSend}
+              className="bg-[#6c47ff] text-white px-4 rounded-lg"
+            >
+              Send
+            </button>
+          </div>
         </div>
       )}
 
