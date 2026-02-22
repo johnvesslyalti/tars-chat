@@ -29,3 +29,14 @@ export const getUsers = query({
     return await ctx.db.query("users").collect();
   },
 });
+
+export const getOtherUsers = query({
+  args: { clerkId: v.string() },
+
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .filter((q) => q.neq(q.field("clerkId"), args.clerkId))
+      .collect();
+  },
+});
