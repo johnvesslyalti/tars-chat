@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
+import { useUser, UserButton, SignIn } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -72,7 +72,7 @@ const DummySidebar = () => (
 );
 
 export default function Home() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   const createUser = useMutation(api.users.createUser);
   const getOrCreateConversation = useMutation(api.conversations.getOrCreateConversation);
@@ -228,6 +228,22 @@ export default function Home() {
       setMessage(currentMessage);
     }
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="h-screen w-full bg-[#b0cbca] flex items-center justify-center font-sans">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (isLoaded && !user) {
+    return (
+      <div className="h-screen w-full bg-[#b0cbca] flex items-center justify-center font-sans">
+        <SignIn routing="hash" />
+      </div>
+    );
+  }
 
   if (!users || !conversations) {
     return (
