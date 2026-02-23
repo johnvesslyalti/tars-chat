@@ -165,13 +165,29 @@ export default function Home() {
   useEffect(() => {
     if (!currentUserId) return;
 
-    updatePresence({ userId: currentUserId });
+    updatePresence({ userId: currentUserId, isOnline: true });
 
     const interval = setInterval(() => {
-      updatePresence({ userId: currentUserId });
+      updatePresence({ userId: currentUserId, isOnline: true });
     }, 5000);
 
-    return () => clearInterval(interval);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        updatePresence({ userId: currentUserId, isOnline: false });
+      } else {
+        updatePresence({ userId: currentUserId, isOnline: true });
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", () => {
+      updatePresence({ userId: currentUserId, isOnline: false });
+    });
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [currentUserId]);
 
   useEffect(() => {
