@@ -16,7 +16,7 @@ export const setTyping = mutation({
       .filter((q) => q.eq(q.field("userId"), args.userId))
       .first();
 
-    const expiresAt = Date.now() + 2000;
+    const expiresAt = Date.now() + 5000;
 
     if (existing) {
       await ctx.db.patch(existing._id, { expiresAt });
